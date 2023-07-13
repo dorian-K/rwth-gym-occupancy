@@ -1,4 +1,4 @@
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 import requests
 from io import BytesIO
 import os
@@ -50,7 +50,7 @@ def split_img(img):
     return parts
 
 
-def get_pics():
+def get_pics_from_fs():
     list = {}
     dir = "./pics"
     for filename in os.listdir(dir):
@@ -63,9 +63,22 @@ def get_pics():
             list[filename.split(".")[0]] = image
     return list
 
+def make_synthetic_digit(character):
+    img = Image.new('L', (22, 30), color="white")
+    d = ImageDraw.Draw(img)
+    font = ImageFont.truetype("arial.ttf", 40)
+    d.text((0, -7), character, fill=0, font=font)
+    img = img.resize((22 * 4, 30 * 4), resample=Image.NEAREST)
+    return img
+
+def get_numbers_synthetic():
+    list = {}
+    for i in range(10):
+        list[i] = make_synthetic_digit(str(i))
+    return list
 
 def read_numbers_from_pics():
-    pics = get_pics()
+    pics = get_pics_from_fs()
     numbers = {}
     for i in range(10):
         for k in pics.keys():
@@ -148,7 +161,8 @@ def match_number(toBeMatched, number_images):
 
 def get_auslastung_and_match_numbers():
     auslastung = get_uptodate_pic()
-    numbers = read_numbers_from_pics()
+    #numbers = read_numbers_from_pics()
+    numbers = get_numbers_synthetic()
     auslastung_digits = split_img(auslastung)
 
     reconstructed_digits = []
